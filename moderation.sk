@@ -1,0 +1,204 @@
+options:
+    prefix: &a&lModeration &c&lSystem
+
+
+    sprefix: &9&lOiBox #change to name of your server
+
+
+    broadcastprefix: &9&lOiBox # This is used for custom broadcast 
+	
+	
+	
+    discordinvite: &9discord.gg/LINKHERE #LINK HERE PLEASE PUT YOUR LINK HERE
+
+command /warn <offline player> <text>:
+  permission: staff.warn
+  permission message: &4&lYou do not have permission to use this command!
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        add 1 to {warns.%arg-1's uuid%}
+        broadcast " "
+        broadcast "&a&m----------------------------------------------"
+        broadcast "&c&l[{@prefix}] &6%player% &cwarned &6%arg-1%"
+        broadcast "&c&l[{@prefix}] They now have %{warns.%arg-1's uuid%}% warn(s)."
+        broadcast "&c&l[{@prefix}] Reason: &6%arg-2%"
+        broadcast "&a&m----------------------------------------------"
+        broadcast " "
+ 
+# Unwarn Command
+command /unwarn <offline player>:
+  permission: staff.unwarn
+  permission message: &4&lYou do not have permission to use this command!
+  trigger:
+    if arg-1 is set:
+      if {warns.%arg-1's uuid%} is 0:
+        send "&a&m----------------------------------------------" to player
+        send "&c&l[{@prefix}] You can't have less then 0 warns" to player
+        send "&a&m----------------------------------------------" to player
+      if {warns.%arg-1's uuid%} is not 0:
+        remove 1 from {warns.%arg-1's uuid%}
+        broadcast " "
+        broadcast "&a&m----------------------------------------------"
+        broadcast "&c&l[{@prefix} &6%player% &cunwarned &6%arg-1%"
+        broadcast "&c&l[{@prefix}] They now have %{warns.%arg-1's uuid%}% warn(s)."
+        broadcast "&a&m----------------------------------------------"
+        broadcast " "
+ 
+# Check Warns Command
+command /checkwarns <offline player>:
+  permission: staff.checkwarns
+  permission message: &4&lYou do not have permission to use this command!
+  trigger:
+    broadcast " "
+    broadcast "&a&m----------------------------------------------"
+    broadcast "&c&l[{@prefix}] &6%arg-1% &chas %{warns.%arg-1's uuid%}% &cwarn(s)."
+    broadcast "&a&m----------------------------------------------"
+    broadcast " "
+
+
+command /mute [<player>] [<text>]:
+  permission: staff.mute
+  permission message: &4&lYou do not have permission to use this command!
+  usage: /mute <Player>
+  trigger:
+    if arg-1 is set:
+      if arg-2 is set:
+        set {staff.muted.%argument 1%} to true
+        message "{@prefix} You have been silenced for %arg-2%" to player
+        stop
+		
+command /unmute [<player>]:
+	permission: staff.unmute
+	permission message: &4&lYou do not have permission to use this command!
+	usage: /unmute <Player>
+	trigger:
+		if arg-1 is set:
+			set {staff.muted.%argument 1%} to false
+			send "{@prefix} &b&lYou have been unmuted!" to player
+			stop
+		
+on chat:
+	if {staff.muted.%player%} is true:
+		cancel event
+		send "{@sprefix} &7>>&c You have been muted, Dont even try to bypass the mute" to player
+		stop
+		
+		
+	
+
+command /staffreload:
+   permission: staff.reload
+   permission message: &4&lYou do not have permission to use this command!
+   trigger:
+      make player execute command "/sk reload staff"
+	  
+	 
+command /broadcast [<text>]:
+    permission: staff.broadcast
+    permission message: &4&lYou do not have permission to use this command!
+    trigger:
+        broadcast "{@broadcastprefix} &7&l>> &b%arg-1%"
+		
+		
+command /baninfo [<offlineplayer>]:
+	permission: staff.baninfo
+	permission message: &4&lYou do not have permission to use this command!
+	usage: /baninfo <Player>
+	trigger:
+		if player has permission "staff.baninfo":
+			if arg is set:
+				if {banned.%arg 1%} is true:
+					send "&7&m------------------------"
+					send "&7&m------------------------"
+					send "&c&lBanned player&7: %arg 1%"
+					send "&c&lBanned by&7: %{ban.bannedby.%arg 1%}%"
+					send "&c&lBan reason&7: %{ban.reason.%arg 1%}%"
+					send "&c&lTime of Ban (EST) &7: %{ban.time.%arg 1%}%"
+					send "&c&lIP Banned &7: %{BanIP.%arg 1%}%"
+					send "&c&lExpiration&7: %{ban.expire.%arg 1%}%"
+					send "&7&m------------------------"
+				else:
+					send "{@prefix} &cThis player is not banned"
+			else:
+				send "{@prefix} &c/Baninfo <Player>"
+		else:
+			send "{@prefix} &cNo Permission"
+			stop
+
+command /ban [<Offlineplayer>] [<Text>] [<time span>]:
+	permission: staff.ban
+	permission message: &4&lYou do not have permission to use this command!
+	usage: /ban <Player> [<Reason>]
+	trigger:
+		if player has permission "staff.ban":
+			if arg 1 is set:
+				if arg 2 is set:
+					set {banned.%arg 1%} to true
+					set {ban.time.%arg 1%} to now
+					set {ban.reason.%arg 1%} to argument-2
+					set {ban.bannedby.%arg 1%} to player
+					set {ban.expire.%arg 1%} to "Never"
+					set {BanIP.%arg 1%} to "False"
+					kick arg 1 due to "&7Banned for &c%arg 2% &7by &c%player%"
+					ban arg 1 due to "&7Banned for &c%arg 2% &7by &c%player%"
+					loop all players:
+						loop-player has permission "oi"
+						send "{@prefix} &c%player% &7banned &c%arg 1% &7Reason: &c%arg 2%" to loop-player
+				else:
+					send "{@prefix} &c/Ban <Player> <Reason>"
+			else:
+				send "{@prefix} &c/Ban <Player> <Reason>"
+		else:
+			send "{@prefix} &cNo permission"
+			stop
+			
+			
+command /unban [<offlineplayer>]:
+	permission: staff.unban
+	usage: /unban <player>
+	trigger:
+		if player has permission "staff.unban":
+			if arg 1 is set:
+				if {banned.%arg 1%} is true:
+					unban arg-1
+					unban ip of arg 1
+					set {banned.%arg 1%} to false
+					loop all players:
+						loop-player has permission "staff.unban"
+						send "{@prefix} &c%player% &7unbanned &c%arg 1%" to loop-player
+				else:
+					send "{@prefix} &cThis player isn't banned"
+			else:
+				send "{@prefix} &c/Unban <Player>"
+		else:
+			send "{@prefix} &cNo permission"
+			stop
+
+
+command /freeze [<player>]:
+	permission: staff.freeze
+	trigger:
+		set {freeze} to true
+		send "{@prefix} you have been frozen by %player% please join the discord {@discordinvite}" to arg-1
+
+command /unfreeze [<player>]:
+	permission: staff.unfreeze
+	trigger:
+		set {freeze} to false
+		send "{@prefix} you have been unfrozen by %player%" to arg-1
+on jump:
+	{freeze} is true
+	cancel event
+
+on place:
+	{freeze} is true
+	cancel event
+
+on click:
+	{freeze} is true
+	cancel event
+
+on mine:
+	{freeze} is true
+	cancel event
